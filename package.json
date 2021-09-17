@@ -1,6 +1,6 @@
 {
   "name": "cdk-resource-initializer",
-  "repository": "git@ssh.gitlab.aws.dev:rsmaso/cdk-rds-initialization.git",
+  "repository": "git@github.com:aws-samples/amazon-rds-init-cdk.git",
   "version": "1.0.0",
   "private": true,
   "main": "index.js",
