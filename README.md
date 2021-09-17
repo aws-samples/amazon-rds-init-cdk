@@ -48,7 +48,7 @@ const fnCode = DockerImageCode.fromImageAsset(`${__dirname}/your-fn-code-directo
 ```
 > You can see a Lambda function code example inside the `./demos/rds-init-fn-code` directory.  
 
-### Example solution overview
+### High level solution overview
 ![Solution Overview](solution-overview.png "Solution Overview")
 
 > NOTE: For simplicity, Amazon S3, Amazon ECR and Amazon CloudWatch configurations are ommitted from the diagram.  
