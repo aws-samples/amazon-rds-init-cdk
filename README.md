@@ -168,7 +168,7 @@ The `CdkResourceInitializer` class exposes the following readonly properties:
   public readonly function: lambda.Function
 ```
 
-### Considerations networking configuration
+### Networking configuration
 
 The `CdkResourceInitializer` construct interface requires networking parameters such as VPC and Subnets, the intention here is to allow the initializer function to communicate with RDS instances which are usually provisioned on Private or Isolated subnets within customer managed VPCs.
 
