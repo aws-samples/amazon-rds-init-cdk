@@ -1,7 +1,7 @@
 # Supporting Amazon RDS initialization using CDK
 
 ## Introduction
-The source code and documentation in this repository describes how to support Amazon RDS instances initialization using CDK and CloudFormation Custom Resources. For the compute layer, it uses a Lambda function implemented in Node.js which is able to run custom SQL scripts with the purpose of initializing the Amazon RDS instance, but also to execute custom commands supported by the [Node.js client for MySQL](https://www.npmjs.com/package/mysql).  
+The source code and documentation in this repository describe how to support Amazon RDS instances initialization using CDK and CloudFormation Custom Resources. For the compute layer, it uses a Lambda function implemented in Node.js which is able to run custom SQL scripts with the purpose of initializing the Amazon RDS instance, but also to execute custom commands supported by the [Node.js client for MySQL](https://www.npmjs.com/package/mysql).  
 
 > Through this documentation and examples we focus on Amazon RDS for MySQL, but the concept being described can be applied to any other supported RDS engine. 
 
