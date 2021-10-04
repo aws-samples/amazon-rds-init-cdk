@@ -3,7 +3,7 @@
 
 import * as ec2 from '@aws-cdk/aws-ec2'
 import * as lambda from '@aws-cdk/aws-lambda'
-import { Construct, Duration } from '@aws-cdk/core'
+import { Construct, Duration, Stack, Tags } from '@aws-cdk/core'
 import { createHash } from 'crypto'
 import { calculateFunctionHash } from '@aws-cdk/aws-lambda/lib/function-hash'
 import { AwsCustomResource, AwsCustomResourcePolicy, AwsSdkCall, PhysicalResourceId } from '@aws-cdk/custom-resources'
@@ -29,6 +29,8 @@ export class CdkResourceInitializer extends Construct {
   constructor (scope: Construct, id: string, props: CdkResourceInitializerProps) {
     super(scope, id)
 
+    const stack = Stack.of(this)
+
     const fnSg = new ec2.SecurityGroup(this, 'ResourceInitializerFnSg', {
       securityGroupName: `${id}ResourceInitializerFnSg`,
       vpc: props.vpc,
@@ -37,7 +39,7 @@ export class CdkResourceInitializer extends Construct {
 
     const fn = new lambda.DockerImageFunction(this, 'ResourceInitializerFn', {
       memorySize: props.fnMemorySize || 128,
-      functionName: `${id}ResourceInitializerFn`,
+      functionName: `${id}-ResInit${stack.stackName}`,
       code: props.fnCode,
       vpcSubnets: props.vpc.selectSubnets(props.subnetsSelection),
       vpc: props.vpc,
@@ -66,17 +68,16 @@ export class CdkResourceInitializer extends Construct {
       },
       physicalResourceId: PhysicalResourceId.of(`${id}-AwsSdkCall-${physicalResIdHash}`)
     }
-
-    const role = new Role(this, 'AwsCustomResourceRole', {
+    
+    // IMPORTANT: the AwsCustomResource construct deploys a singleton AWS Lambda function that is re-used across the same CDK Stack,
+    // because it is intended to be re-used, make sure it has permissions to invoke multiple "resource initializer functions" within the same stack and it's timeout is sufficient.
+    // @see: https://github.com/aws/aws-cdk/blob/cafe8257b777c2c6f6143553b147873d640c6745/packages/%40aws-cdk/custom-resources/lib/aws-custom-resource/aws-custom-resource.ts#L360
+    const customResourceFnRole = new Role(this, 'AwsCustomResourceRole', {
       assumedBy: new ServicePrincipal('lambda.amazonaws.com')
     })
-
-    // IMPORTANT: the AwsCustomResource construct deploys a singleton AWS Lambda function that is re-used across the same CDK Stack,
-    // because it is intended to be re-used, make sure it has permissions to invoke multiple functions and it's timeout is sufficient.
-    // @see: https://github.com/aws/aws-cdk/blob/cafe8257b777c2c6f6143553b147873d640c6745/packages/%40aws-cdk/custom-resources/lib/aws-custom-resource/aws-custom-resource.ts#L360
-    role.addToPolicy(
+    customResourceFnRole.addToPolicy(
       new PolicyStatement({
-        resources: ['*'],
+        resources: [`arn:aws:lambda:${stack.region}:${stack.account}:function:*-ResInit${stack.stackName}`],
         actions: ['lambda:InvokeFunction']
       })
     )
@@ -84,7 +85,7 @@ export class CdkResourceInitializer extends Construct {
       policy: AwsCustomResourcePolicy.fromSdkCalls({ resources: AwsCustomResourcePolicy.ANY_RESOURCE }),
       onUpdate: sdkCall,
       timeout: Duration.minutes(10),
-      role
+      role: customResourceFnRole
     })
 
     this.response = this.customResource.getResponseField('Payload')
