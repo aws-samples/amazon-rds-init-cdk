@@ -6,15 +6,40 @@ The source code and documentation in this repository describe how to support Ama
 > Through this documentation and examples we focus on Amazon RDS for MySQL, but the concept being described can be applied to any other supported RDS engine. 
 
 ### Potential use cases
-- Initialize databases with their corresponding schema or table structures.
+- Initialize databases.
 - Initialize/maintain users and their permissions.
 - Initialize/maintain stored procedures, views or other database resources.
 - Execute other custom logic as part of a resource initialization process.
+- Improve segregation of duties/least privilege by providing a flexible hook in the IaC, in order to manage RDS instances initialization.
+- Initialize database tables. (see note below)
+- Seed database tables with initial datasets. (see note below)
 
-### Pre-Requisites:
+> NOTE: Please be aware that application specific initilization logic (for example: database tables structure and initial seeding of data) is a concern that is commonly managed on the application side. Overall, we advice to keep infrastructure initialization/management separated from application specific initialization. 
+
+### Pre-Requisites
 - Node.js v14+ installed on your local machine: https://nodejs.org/en/download/
 - Docker installed on your local machine: https://docs.docker.com/get-docker/
 - CDK v1.122+ installed and configured on your local machine: https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html
+
+### Installation and Deployment steps
+- Git clone or download the repository:  
+  https://github.com/aws-samples/amazon-rds-init-cdk.git
+- Install NPM dependencies on project directory:  
+  ```
+  npm install
+  ```
+- Deploy the solution on your configured AWS account:  
+  ```
+  cdk deploy
+  ```
+
+> NOTE: For demo purposes, the example CDK stack `demos/rds-init-example.ts` creates a new VPC/Subnets to provision the RDS instance and Lambda funtions. In case you would prefer to re-use existing VPC and Subnets, you can easily do so by importing an existing VPC resource: https://docs.aws.amazon.com/cdk/api/latest/docs/@aws-cdk_aws-ec2.Vpc.html#static-fromwbrlookupscope-id-options
+
+#### Cleanup 
+To avoid incurring future charges, delete the provisioned CDK Stack and related resources. This can be done by executing the following command and subsequent steps:  
+```
+cdk destroy
+```
 
 ## Technical implementation
 In order to achieve custom logic execution during the deployment flow of a CDK stack, we make use of CloudFormation Custom Resources. In the context of CDK, we use the `AwsCustomResource` construct to invoke a deployed lambda containing the RDS initialization logic (execute SQL scripts).
@@ -140,7 +165,6 @@ export class RdsInitStackExample extends Stack {
     })
   }
 }
-
 ```
 
 #### Configuration options
@@ -183,7 +207,7 @@ The initializer function will be executed under one the following circumstances:
 
 ## Useful CDK commands for this repository
 
-- `cdk deploy` Deploy the example `rds-init-example` Stack to your default AWS account/region
+- `cdk deploy` Deploy the CDK stack to your default AWS account/region
 - `cdk diff` Compare deployed stack with current local state
 - `cdk synth` Generates a synthesized CloudFormation template
 
