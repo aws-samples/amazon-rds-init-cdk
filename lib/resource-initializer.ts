@@ -7,6 +7,7 @@ import { Construct, Duration, Stack } from '@aws-cdk/core'
 import { AwsCustomResource, AwsCustomResourcePolicy, AwsSdkCall, PhysicalResourceId } from '@aws-cdk/custom-resources'
 import { RetentionDays } from '@aws-cdk/aws-logs'
 import { PolicyStatement, Role, ServicePrincipal } from '@aws-cdk/aws-iam'
+import { createHash } from 'crypto'
 
 export interface CdkResourceInitializerProps {
   vpc: ec2.IVpc
@@ -53,6 +54,8 @@ export class CdkResourceInitializer extends Construct {
       }
     })
 
+    const payloadHashPrefix = createHash('md5').update(payload).digest('hex').substring(0, 6)
+
     const sdkCall: AwsSdkCall = {
       service: 'Lambda',
       action: 'invoke',
@@ -60,7 +63,7 @@ export class CdkResourceInitializer extends Construct {
         FunctionName: fn.functionName,
         Payload: payload
       },
-      physicalResourceId: PhysicalResourceId.of(`${id}-AwsSdkCall-${fn.currentVersion.version}`)
+      physicalResourceId: PhysicalResourceId.of(`${id}-AwsSdkCall-${fn.currentVersion.version + payloadHashPrefix}`)
     }
     
     // IMPORTANT: the AwsCustomResource construct deploys a singleton AWS Lambda function that is re-used across the same CDK Stack,
