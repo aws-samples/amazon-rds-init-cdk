@@ -82,7 +82,7 @@ const fnCode = DockerImageCode.fromImageAsset(`${__dirname}/your-fn-code-directo
 
 ### The CdkResourceInitializer construct
 
-TThe `CDKResourceInitializer` CDK construct generalizes the proposed solution, it encapsulates the integration requirements behind `CloudFormation Custom Resources` and `CDK`, to support the execution of AWS Lambda functions with custom initialization logic. 
+The `CDKResourceInitializer` CDK construct generalizes the proposed solution, it encapsulates the integration requirements behind `CloudFormation Custom Resources` and `CDK`, to support the execution of AWS Lambda functions with custom initialization logic. 
 
 #### Usage (full example)
 ```ts
